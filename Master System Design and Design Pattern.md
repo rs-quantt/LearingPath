@@ -92,7 +92,160 @@
   productLogs = Logger.getInstance()
   productLogs.add('4:03:31 PM [vite] hmr update /src/pages/AdminProducts/ProductFormModal.tsx')
 
-  centerLogs = Logger.getInstanc()
+  centerLogs = Logger.getInstance()
   centerLogs.display()
   // Console.log: 4:03:31 PM [vite] hmr update /src/pages/AdminProducts/ProductFormModal.tsx
+  ```
+
+### Factory Design Pattern & Abtract Factory Design Pattern
+
+- **Factory Design Pattern** (hay còn gọi là virtual contructor) là một mẫu thiết kế thuộc nhóm Creational Patterns - những mẫu thiết kế cho việc khởi tạo đối tượng của class. FDP cung cấp một interface, phương thức trong việc tạo nên một đối tượng trong class. Nhưng để cho class con kế thừa của nó có thể ghi đè để chỉ rõ đối tượng nào sẽ được tạo ra. FDP giao việc khởi tạo một đối tượng cụ thể cho lớp con
+
+- **Mục đích**
+  - Tạo ra một cách khởi tạo object mới thông qua một interface chung
+  - Che giấu quá trình xử lý logic của phương thức khởi tạo
+  - Giảm sự phụ thuộc, dễ dàng mở rộng
+  - Giảm khả năng gây lỗi compile
+
+  ```ts
+  // Reader class
+  class ReaderFactory {
+    static create(type: string) {
+      switch (type) {
+        case type.EXCEL:
+          return new ReaderForExcel();
+        case type.WORD:
+          return new ReaderForWord();
+        case type.PDF:
+          return new ReaderForPDF();
+      }   
+    }
+  }
+
+  // Using
+  const reader = ReaderFactory.create(type)
+  reader.read();
+
+  ```
+
+- **Abtract Factory Design Pattern** được xây dựng dựa trên FDP và nó được xem là một factory cao nhất trong hệ thống phân cấp. Pattern này sẽ tạo ra các factory là class con của nó và các factory này được tạo ra giống như cách mà factory tạo ra các sub-class
+
+  ```ts
+  // Writer class
+  class WriterFactory {
+    static create(type: string) {
+      switch (type) {
+        case type.EXCEL:
+          return new WriterForExcel();
+        case type.WORD:
+          return new WriterForWord();
+        case type.PDF:
+          return new WriterForPDF();
+      }   
+    }
+  }
+  ```
+
+  Tuy nhiên nếu tách biệt như vậy sẽ dẫn đến trường hợp
+
+  ```ts
+  // reader & writer conflict tool
+  const reader = ReaderFactory.create(type.EXCEL)
+  const writer = WriterFactory.create(type.WORD)
+  ```
+
+  Vì vậy, thay vì chọn Object ta sẽ chọn Factory
+
+  ```ts
+  interface Reader {
+    read(): void;
+  };
+  interface Writer {
+    write(): void;
+  };
+
+  // DocumentFactory - Abstract Factory
+  interface DocumentFactory {
+    createWriter(): Writer;
+    createReader(): Reader;
+  }
+  ```
+  ```ts
+  class WriterForWord implements Writer {
+    write() {
+      console.log('WriterForWord');
+    }
+  };
+  class ReaderForWord implements Reader {
+    read() {
+      console.log('ReaderForWord');
+    }
+  };
+
+  // WordFactory
+  class WordFactory implements DocumentFactory {
+    createWriter() {
+      return new WriterForWord();
+    }
+
+    createReader() {
+      return new ReaderForWord();
+    }
+  }
+  ```
+
+  ```ts
+  // Using
+  const word = new WordFactory();
+  
+  // Word writer
+  const writer = word.createWriter();
+  writer.write()
+
+  // Word reader
+  const reader = word.createReader();
+  reader.read();
+  ```
+
+### Strategy Design Pattern
+
+- **Strategy Design Pattern** là một trong những mẫu thiết kế hành vi được sử dụng khi có nhiều thuật toán cần áp dụng cho một nhiệm vụ cụ thể , và khách hàng sẽ là người quyết định chọn thuật toán nào để sử dụng trong thời điểm chương trình đang được thực thi.
+
+  ```ts
+  interface PaymentStrategy {
+    pay(amount: number): void;
+  }
+  ```
+
+  ```ts
+  // Visa payment method
+  class VisaPayment implements PaymentStrategy {
+    pay(amount: number) {
+      console.log(`Payment with Pisa: ${amount}`);
+    }
+  }
+
+  // Paypal payment method
+  class PaypalPayment implements PaymentStrategy {
+    pay(amount: number) {
+      console.log(`Payment with Paypal: ${amount}`);
+    }
+  }
+  ```
+
+  ```ts
+  // Payment service
+  class PaymentService {
+    constructor(private paymentStrategy: PaymentStrategy) {}
+    
+    pay(amount: number) {
+      this.paymentStrategy.pay(amount);
+    }
+  }
+  ```
+
+  ```ts
+  // Using
+  const payment = new PaymentService(new PaypalPayment())
+  payment.pay(50);
   ```
