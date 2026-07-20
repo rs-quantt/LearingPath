@@ -249,3 +249,69 @@
   const payment = new PaymentService(new PaypalPayment())
   payment.pay(50);
   ```
+
+### Observer Design Pattern
+
+- **Observer Design Pattern** là một mẫu thiết kế thuộc nhóm Behavioral Pattern, nó định nghĩa mối phụ thuộc một - nhiều giữa các đối tượng để khi một đối tượng có sự thay đổi trạng thái, tất cả thành phần phụ thuộc của nó sẽ được thông báo và cập nhật một cách tự động. Một đối tượng có thể gửi thông báo đến các đối tượng khác mà ko bị giới hạn về số lượng.
+
+  ```ts
+  // Observer - Subscriber
+  interface Observer {
+    getNotify(noti: string): void;
+  }
+
+  class Subscriber1 implements Observer {
+    getNotify(noti: string) {
+      console.log(noti)
+    }
+  }
+
+  class Subscriber2 implements Observer {
+    getNotify(noti: string) {
+      console.log('VIP: ' + noti)
+    }
+  }
+  ```
+
+  ```ts
+  // Subject - Publisher
+  interface Subject {
+    registerObserver(observer: Observer): void;
+    removeObserver(observer: Observer): void;
+    notify(): void;
+  }
+
+  class Publisher implements Subject {
+    private observers: Observer[] = [];
+    
+    // Register observer
+    registerObserver(observer: Observer) {
+      this.observers.push(observer)
+    }
+
+    // Remove observer
+    removeObserver(observer: Observer) {
+      this.observers = this.observers.filter(ob => ob != observer)
+    }
+
+    // Notify
+    notify() {
+      this.observers.forEach(observer => {
+        observer.getNotify('I just uploaded a new video');
+      })
+    }
+  }
+  ```
+  ```ts
+  // Using
+  const sub1 = new Subscriber1();
+  const sub2 = new Subscriber2();
+
+  const pub = new Publisher();
+  pub.registerObserver(sub1);
+  pub.registerObserver(sub2);
+
+  pub.notify();
+  // [LOG]: "I just uploaded a new video" 
+  // [LOG]: "VIP: I just uploaded a new video" 
+  ```
